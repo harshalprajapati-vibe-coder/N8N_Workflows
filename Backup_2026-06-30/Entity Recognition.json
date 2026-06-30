@@ -1,0 +1,1261 @@
+{
+  "updatedAt": "2026-06-23T09:20:08.681Z",
+  "createdAt": "2026-06-22T06:25:10.054Z",
+  "id": "5UAV9lqIMqWcIh3Y",
+  "name": "Entity Recognition",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "You are a document data extraction expert. Your job is to analyze document images and extract ALL meaningful information into a structured JSON format.\n\nRules:\n- Extract every piece of data you can find — text, numbers, dates, tables, addresses, names, IDs, amounts, checkboxes, signatures (note presence only), etc.\n- Infer the document type from its content.\n- Group related fields logically.\n- For tables, return them as arrays of objects.\n- If a field is unclear or partially visible, still include it and add a \"confidence\": \"low\" flag on that field.\n- If a value is not present, omit the field entirely — do not return nulls.\n- Return ONLY valid JSON, no explanation, no markdown, no code fences."
+            },
+            {
+              "type": "file",
+              "fileType": "base64",
+              "binaryPropertyName": "file_1",
+              "fileName": "={{$binary.file_1.fileName}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        -960
+      ],
+      "id": "5c01d048-fd87-4f2e-ae26-7f006b8cd783",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "GA2KId0ji55ktoK9",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n\"success\":true,\n  \"response\": {{ $json.output[0].content[0].text }}\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1760,
+        -784
+      ],
+      "id": "2d26acdd-939f-4d86-ab59-394138767ae7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1104,
+        -800
+      ],
+      "id": "9fc788d2-df92-49f6-bb16-f331607399c6",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "You are a document data extraction expert. Your job is to analyze document images and extract ALL meaningful information into a structured JSON format.\n\nRules:\n- Extract every piece of data you can find — text, numbers, dates, tables, addresses, names, IDs, amounts, checkboxes, signatures (note presence only), etc.\n- Infer the document type from its content.\n- Group related fields logically.\n- For tables, return them as arrays of objects.\n- If a field is unclear or partially visible, still include it and add a \"confidence\": \"low\" flag on that field.\n- If a value is not present, omit the field entirely — do not return nulls.\n- Return ONLY valid JSON, no explanation, no markdown, no code fences."
+            },
+            {
+              "type": "file",
+              "fileType": "base64",
+              "binaryPropertyName": "file_2",
+              "fileName": "={{$binary.file_2.fileName}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        -640
+      ],
+      "id": "006644ec-1a9e-4d45-8cd7-9cc27b78e9b6",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "GA2KId0ji55ktoK9",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"file_1\": {{ $json.output[0].content[0].text }}\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        -960
+      ],
+      "id": "2d8f9312-a79b-4e91-b90f-34c2c36cad2c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"file_2\": {{ $json.output[0].content[0].text }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        -640
+      ],
+      "id": "d50c30ef-612c-4a2a-8237-57a47e6a8790",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9fff82f5-feab-4d9f-8048-7d6bfe577668",
+              "leftValue": "={{$binary.file_2.mimeType}}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        -624
+      ],
+      "id": "8519dc74-de01-482b-b6f2-30761e294d0d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n\"success\":false,\n\"message\":\"Please upload pdf file\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -208,
+        -448
+      ],
+      "id": "165e1897-efa5-40b1-ae5f-5252d3f65ee3",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7452ee70-8d1c-4c53-b561-d6ea93129142",
+              "leftValue": "={{$binary.file_2.mimeType}}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        -944
+      ],
+      "id": "540d751a-ec9a-4570-b035-308f147f4c55",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n\"success\":false,\n\"message\":\"Please upload pdf file\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -208,
+        -1088
+      ],
+      "id": "7401db8a-ea10-4b6e-b699-d60bcb57fb7f",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a precise data analyst assistant. You will be given structured JSON data extracted from one or more documents, and one or more user questions about that data.\n\nRules:\n\n* Answer ONLY based on the data provided in the JSON.\n* Always cite the exact values, field names, or items from the source data that support your answer.\n* Be concise and direct.\n* If the answer involves numbers, calculate accurately and show the breakdown.\n* Do not infer, assume, or use external knowledge.\n* If a question cannot be answered from the available data, use:\n  \"This information is not available in the provided documents.\"\n* Return one result object for each question.\n* Always return a valid JSON object only — no explanations, no markdown, no code fences.\n\nUse this exact output structure:\n\n{\n\"results\": [\n{\n\"query\": \"<the original question>\",\n\"answer\": \"<clear concise answer in plain English>\",\n\"supporting_data\": [\n{\n\"field\": \"<field or item name from source JSON>\",\n\"value\": \"<exact value from source JSON>\",\n\"source\": \"<file or document identifier>\"\n}\n],\n\"calculation\": \"<show step-by-step working if calculations were required>\"\n}\n]\n}\n\nAdditional rules:\n\n* \"results\" must always be an array.\n* Each question must produce exactly one object inside \"results\".\n* Omit \"calculation\" if no calculation is required.\n* \"supporting_data\" must contain only data directly used to generate the answer.\n* Include multiple supporting_data entries if information came from multiple fields or documents.\n* Preserve exact values from the source JSON without modifying them.\n* The response must be valid JSON that can be parsed directly.\n"
+            },
+            {
+              "content": "=Here is the extracted document data:\n\n<data_1>\n {{ JSON.stringify($json.file_1)}}\n</data_1>\n\n<data_2>\n {{ JSON.stringify($json.file_2) }}\n</data_2>\n\nUser question:  {{ JSON.stringify($json[\"query's\"]) }}\n\nAnswer the question based strictly on the data above and return the JSON response."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1360,
+        -784
+      ],
+      "id": "105ed712-2abb-44c9-bafe-f7a18ebdf12e",
+      "name": "Message a model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "GA2KId0ji55ktoK9",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"query's\":   {{ $json.body[\"query's\"].map\n((x, i) => ({ [`${i + 1}`]: x })) }}\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        -768
+      ],
+      "id": "2dd750ff-494f-4ced-ba3d-7637fd42bed1",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6604ab95-e940-4c8e-b4d8-85f0307540a0",
+              "leftValue": "={{$binary.file.mimeType}}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -320,
+        1056
+      ],
+      "id": "94917eeb-26f3-472e-9161-d9549bf6dfc1",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n\"success\":false,\n\"message\":\"Please upload pdf file\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -320,
+        1280
+      ],
+      "id": "3b237af3-e48a-4400-82ec-5d5e0a2a5f58",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are an expert document analysis assistant. Your task is to accurately answer ALL user questions using ONLY the information contained within the attached PDF document.\n\nCRITICAL REQUIREMENT: Always return your response as a valid parsable JSON array. Do not include explanations outside JSON, do not use markdown formatting, and do not wrap the response in code fences.\n\nReturn this exact structure:\n\n[\n{\n\"query\": \"<original question>\",\n\"answer\": \"<clear concise answer in plain English>\",\n\"supporting_data\": [\n{\n\"field\": \"<specific section, field name, table row, or header from PDF>\",\n\"value\": \"<exact value or phrase from PDF>\",\n\"source\": \"attached_pdf\"\n}\n],\n\"calculation\": \"<show mathematical working if numbers were involved, otherwise leave empty>\"\n}\n]\n\nStrict Rules:\n\n1. Process EVERY question in the questions array.\n2. Return one object per question.\n3. Preserve the original question exactly in the \"query\" field.\n4. Do not assume or use outside knowledge.\n5. If the PDF does not contain sufficient information:\n\n\"answer\":\n\"I'm sorry, but the provided document does not contain the information needed to answer this question.\"\n\n6. \"supporting_data\" must contain exact values from the PDF only.\n7. The number of objects in the output array must exactly match the number of input questions.\n\nUSER QUESTIONS:\n{{ JSON.stringify($json.questions) }}\n"
+            },
+            {
+              "type": "file",
+              "fileType": "base64",
+              "binaryPropertyName": "file",
+              "fileName": "={{$binary.file.fileName}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        464,
+        1056
+      ],
+      "id": "9d7f2971-30da-457a-ae95-22512122fd93",
+      "name": "Message a model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "GA2KId0ji55ktoK9",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n\"success\":true,\n  \"response\":  {{ $json.output[0].content[0].text }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        816,
+        1056
+      ],
+      "id": "3d973d3f-694c-4d77-b8a8-20575c34e423",
+      "name": "Respond to Webhook4"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"questions\":  {{ $json.body[\"query's\"].map\n((x, i) => ({ [`${i + 1}`]: x }))\n}}\n}\n",
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        1056
+      ],
+      "id": "4e2c7c3d-f2e4-40a7-930b-a202a338a41c",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "87591009-2fca-4135-954c-3e7b2f18ae69",
+              "leftValue": "={{ $json.body[\"query's\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -48,
+        1056
+      ],
+      "id": "10e5b0f5-7c3d-43a5-9110-696a29b67809",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n\"success\":false,\n\"message\":\"Please provide query's to ask\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -48,
+        1280
+      ],
+      "id": "2d246859-53c4-4356-9150-bb8717f94c04",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "entity_recognition",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -528,
+        1056
+      ],
+      "id": "f968bbc0-e670-4aff-b781-a091cd0216c6",
+      "name": "entity_recognition_webhook",
+      "webhookId": "98eac675-66fb-4a58-b87f-9980aecce28c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "98b3a5d2-a352-4c50-8f30-6a34ddb1d64b",
+              "leftValue": "={{ $json.body[\"query's\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        32,
+        -784
+      ],
+      "id": "2efec0ef-4781-4881-8553-632aef9256fb",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        32,
+        -560
+      ],
+      "id": "f970ca3e-ec9d-4d02-bcd2-22afd24a0f62",
+      "name": "Respond to Webhook6"
+    },
+    {
+      "parameters": {
+        "content": "## Doc Comparision",
+        "height": 96,
+        "width": 176
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -80
+      ],
+      "id": "fed98462-2014-4959-963b-5ff4ff900923",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "You are a document data extraction expert. Your job is to analyze document images and extract ALL meaningful information into a structured JSON format.\n\nRules:\n- Extract every piece of data you can find — text, numbers, dates, tables, addresses, names, IDs, amounts, checkboxes, signatures (note presence only), etc.\n- Infer the document type from its content.\n- Group related fields logically.\n- For tables, return them as arrays of objects.\n- If a field is unclear or partially visible, still include it and add a \"confidence\": \"low\" flag on that field.\n- If a value is not present, omit the field entirely — do not return nulls.\n- Return ONLY valid JSON, no explanation, no markdown, no code fences."
+            },
+            {
+              "type": "file",
+              "fileType": "base64",
+              "binaryPropertyName": "file_1",
+              "fileName": "={{$binary.file_1.fileName}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        240,
+        96
+      ],
+      "id": "f6c11c67-1ce5-4cbf-a4ea-d5be92ba3672",
+      "name": "Message a model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "GA2KId0ji55ktoK9",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n\"success\":true,\n  \"response\": {{ $json.output[0].content[0].text }}\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1776,
+        272
+      ],
+      "id": "5f0e8d7d-4251-4397-a48b-8a9b1a1428b9",
+      "name": "Respond to Webhook7"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1120,
+        256
+      ],
+      "id": "32784cdc-6ce0-488e-8bb5-59c3e0f6b0b8",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "You are a document data extraction expert. Your job is to analyze document images and extract ALL meaningful information into a structured JSON format.\n\nRules:\n- Extract every piece of data you can find — text, numbers, dates, tables, addresses, names, IDs, amounts, checkboxes, signatures (note presence only), etc.\n- Infer the document type from its content.\n- Group related fields logically.\n- For tables, return them as arrays of objects.\n- If a field is unclear or partially visible, still include it and add a \"confidence\": \"low\" flag on that field.\n- If a value is not present, omit the field entirely — do not return nulls.\n- Return ONLY valid JSON, no explanation, no markdown, no code fences."
+            },
+            {
+              "type": "file",
+              "fileType": "base64",
+              "binaryPropertyName": "file_2",
+              "fileName": "={{$binary.file_2.fileName}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        240,
+        416
+      ],
+      "id": "587f1c3a-178b-4c68-9093-ed0fe5fde130",
+      "name": "Message a model6",
+      "credentials": {
+        "openAiApi": {
+          "id": "GA2KId0ji55ktoK9",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"file_1\": {{ $json.output[0].content[0].text }}\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        96
+      ],
+      "id": "cbb5a795-dbd3-4d59-a886-9d146390925f",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"file_2\": {{ $json.output[0].content[0].text }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        416
+      ],
+      "id": "ec06bb83-5906-49fc-bbb0-aaee46ac2ab8",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9fff82f5-feab-4d9f-8048-7d6bfe577668",
+              "leftValue": "={{$binary.file_2.mimeType}}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -192,
+        432
+      ],
+      "id": "5ec2916a-3017-43f3-aa9a-558c3a73fef3",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n\"success\":false,\n\"message\":\"Please upload pdf file\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -192,
+        608
+      ],
+      "id": "d0453dea-e8b6-4e51-abea-e379ed0037a4",
+      "name": "Respond to Webhook8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7452ee70-8d1c-4c53-b561-d6ea93129142",
+              "leftValue": "={{$binary.file_2.mimeType}}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -192,
+        112
+      ],
+      "id": "807ced42-c2d2-47d4-a18f-73e919398052",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n\"success\":false,\n\"message\":\"Please upload pdf file\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -192,
+        -32
+      ],
+      "id": "664d5488-1ef9-4dc7-9ddc-a025d472cc05",
+      "name": "Respond to Webhook9"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are a precise financial document comparison analyst. You will be given structured JSON data extracted from two documents of the same type but different time periods.\n\nYour job is to identify and explain every meaningful difference between the two documents.\n\nDocument 1:\n<document_1>\n {{ JSON.stringify($json.file_1)}}\n</document_1>\n\nDocument 2:\n<document_2>\n {{ JSON.stringify($json.file_2) }}\n</document_2>\n\nRules:\n* Compare ONLY based on the data provided in the JSON. Do not infer, assume, or use external knowledge.\n* Identify every field or value that has changed between the two documents.\n* For every change, calculate the absolute difference and percentage change.\n* Categorize changes as: \"increased\", \"decreased\", \"new entry\" or \"removed entry\".\n* Ignore fields that are identical across both documents.\n* Values in parentheses e.g. (3,127.41) represent negative numbers — treat them as negative in calculations but preserve the original format in supporting_data values.\n* Return ONLY valid JSON — no explanation, no markdown, no code fences.\n\nReturn this exact structure:\n\n{\n  \"comparison_summary\": {\n    \"document_1\": \"<identifier or period of first document>\",\n    \"document_2\": \"<identifier or period of second document>\",\n    \"document_type\": \"<type of document e.g. Balance Sheet, Income Statement>\"\n  },\n  \"changes\": [\n    {\n      \"field\": \"<field or line item name>\",\n      \"category\": \"<section this field belongs to e.g. Current Assets, Fixed Assets, Liabilities>\",\n      \"document_1_value\": \"<exact value from document 1>\",\n      \"document_2_value\": \"<exact value from document 2>\",\n      \"change_type\": \"<increased | decreased | new entry | removed entry>\",\n      \"absolute_change\": \"<document_2_value minus document_1_value>\",\n      \"percentage_change\": \"<percentage change rounded to 2 decimal places>\",\n      \"significance\": \"<high | medium | low based on percentage change: high > 20%, medium 5-20%, low < 5%>\"\n    }\n  ],\n  \"key_highlights\": [\n    \"<top 3 to 5 most significant changes explained in plain English>\"\n  ],\n  \"overall_assessment\": \"<2 to 3 sentence plain English summary of what changed overall between the two periods>\"\n}\n\nAdditional rules:\n* \"changes\" must be an array with one object per changed field.\n* \"key_highlights\" must be an array of plain English strings.\n* Fields with identical values in both documents must be excluded from \"changes\".\n* \"significance\" is based on absolute percentage change: high > 20%, medium between 5% and 20%, low < 5%.\n* If a field exists in one document but not the other, use \"new entry\" or \"removed entry\" as change_type and leave the missing value as null.\n* \"overall_assessment\" must reference specific numbers from the data.\n* The response must be valid JSON that can be parsed directly.\n* Do not create separate entries for a line item and its total if they represent exactly the same value. Include only the more descriptive of the two."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1360,
+        272
+      ],
+      "id": "f8f44c99-77c9-4117-81a3-4d14c7c2d45f",
+      "name": "Message a model8",
+      "credentials": {
+        "openAiApi": {
+          "id": "GA2KId0ji55ktoK9",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Doc Questionair",
+        "height": 112,
+        "width": 176
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -1216
+      ],
+      "id": "b7217deb-7a44-4c81-a268-c0c054b6257a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "doc_questionnaire",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -528,
+        -784
+      ],
+      "id": "8a74949d-068f-45e0-b33a-c3b79cc9dd8e",
+      "name": "doc_questionnaire",
+      "webhookId": "f6359439-25e0-450d-a9e5-83c84581b716"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "doc_comparison",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -512,
+        272
+      ],
+      "id": "48ec4955-784e-4d7a-a9a6-ec0144a6a593",
+      "name": "doc_comparison",
+      "webhookId": "f6359439-25e0-450d-a9e5-83c84581b716"
+    },
+    {
+      "parameters": {
+        "content": "##  Entity Recognition",
+        "height": 112
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        832
+      ],
+      "id": "5ca43801-633b-4b71-9e75-d794916828a4",
+      "name": "Sticky Note2"
+    }
+  ],
+  "connections": {
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Message a model2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook2": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook3": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook4": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Message a model3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "entity_recognition_webhook": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Message a model8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model6": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Message a model6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "Message a model5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model8": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "doc_questionnaire": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "doc_comparison": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "f061c4ad-343d-4b8e-81e6-d8377990dec3",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-06-22T06:25:10.060Z",
+      "createdAt": "2026-06-22T06:25:10.060Z",
+      "role": "workflow:owner",
+      "workflowId": "5UAV9lqIMqWcIh3Y",
+      "projectId": "pIMp2GrTb3RpNTD0"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
