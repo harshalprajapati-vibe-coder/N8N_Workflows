@@ -1,0 +1,392 @@
+{
+  "updatedAt": "2026-06-29T09:31:56.033Z",
+  "createdAt": "2026-06-29T09:26:29.801Z",
+  "id": "5XpXYtZOHrhO5Efa",
+  "name": "File Data Extraction OpenAI S3 (Finalize)",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ef126be9-2419-4f05-a247-7288584f62f3",
+              "leftValue": "={{ $binary.file.mimeType }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -448,
+        1184
+      ],
+      "id": "7e2bcb9f-9c37-4ca3-ac45-b77f9c3d78f0",
+      "name": "File Type Check"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "extracted_docs",
+        "fields": "document_type, currency, company, items, total",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        1152
+      ],
+      "id": "db3b5843-4591-4c03-86a7-790fc4f74fcf",
+      "name": "Insert documents",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "mongoDb": {
+          "id": "mRZhayB308AxPqSQ",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        1168
+      ],
+      "id": "065f2df7-c6b9-4e9a-a24f-73a15ecdaa08",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n// for (const item of $input.all()) {\n//   item.json.myNewField = 1;\n// }\n\nconst json = $input.all()[0].json;\n\nconst missing = [];\n\nif (!json.document_type)\n  missing.push(\"document_type\");\n\n// if (!json.company?.name)\n//   missing.push(\"company.name\");\n\n// if (!json.quotation?.quotation_number)\n//   missing.push(\"quotation.quotation_number\");\n\n// if (json.pricing?.total_amount == null)\n//   missing.push(\"pricing.total_amount\");\n \n\nreturn [{\n  json: {\n    ...json,\n    isValid: missing.length === 0,\n    missingFields: missing\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        1168
+      ],
+      "id": "412b4778-4fd6-4ec3-ae20-f0b02673c003",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"message\": \"The following items are missing: {{$json.missingFields.join(', ')}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        624,
+        1392
+      ],
+      "id": "a6f8c8e1-be06-473e-a16f-f091dba9e8c9",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "Extract the document into valid JSON only.\n\nRules:\n1. Return only JSON.\n2. Use null for missing values.\n3. Use arrays for multiple values.\n4. Convert dates to YYYY-MM-DD.\n5. Convert currency values to numbers without symbols.\n6. Do not hallucinate missing data."
+            },
+            {
+              "type": "file",
+              "fileType": "base64",
+              "binaryPropertyName": "file",
+              "fileName": "={{ $binary.file.fileName }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_schema",
+              "schema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"AssetList\",\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"required\": [\n    \"document_type\", \"company\", \"currency\", \"items\", \"total\"\n  ],\n  \"properties\": {\n    \"document_type\": { \"type\": [\"string\", \"null\"] },\n    \"currency\": { \"type\": [\"string\", \"null\"] },\n    \"company\": {\n      \"type\": \"object\", \"additionalProperties\": false,\n      \"required\": [\"name\", \"redacted_field\"],\n      \"properties\": {\n        \"name\":           { \"type\": [\"string\", \"null\"] },\n        \"redacted_field\": { \"type\": [\"string\", \"null\"] }\n      }\n    },\n    \"items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\", \"additionalProperties\": false,\n        \"required\": [\"item_name\", \"category\", \"estimated_current_value\"],\n        \"properties\": {\n          \"item_name\":               { \"type\": [\"string\", \"null\"] },\n          \"category\":                {\n            \"type\": [\"string\", \"null\"],\n            \"enum\": [\"vehicle\", \"furniture\", \"tools\", \"electronics\", \"equipment\", \"marketing\", \"inventory\", \"other\", null]\n          },\n          \"estimated_current_value\": { \"type\": [\"number\", \"null\"] }\n        }\n      }\n    },\n    \"total\": { \"type\": [\"number\", \"null\"] }\n  }\n}"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        1168
+      ],
+      "id": "c9c4caf7-4dd5-47be-ab3d-40a14f3ffb19",
+      "name": "Generate a model response1",
+      "retryOnFail": true,
+      "waitBetweenTries": 4000,
+      "credentials": {
+        "openAiApi": {
+          "id": "GA2KId0ji55ktoK9",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"Data added successfully\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1024,
+        1152
+      ],
+      "id": "e931b6a1-dc86-4329-abf0-d1f0925f2bf4",
+      "name": "Respond to Webhook4"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "frand-dev-n8n-doc-files",
+        "fileName": "=extracted_doc_files/{{ $binary.file.fileName }}",
+        "binaryPropertyName": "file",
+        "additionalFields": {},
+        "tagsUi": {
+          "tagsValues": []
+        }
+      },
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        1376
+      ],
+      "id": "be2ae903-c456-4f7f-b6a8-d50440395514",
+      "name": "Upload a file1",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "notesInFlow": false,
+      "credentials": {
+        "aws": {
+          "id": "sFfsYKhVmGuwbK6M",
+          "name": "AWS (IAM) account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n\"success\":false,\n\"message\":\"Please upload pdf file\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -512,
+        1408
+      ],
+      "id": "0d51d348-658d-4dd1-a790-fb9fd3e9b7be",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "384c3221-f58e-4b6d-a097-681f6df46b3f",
+              "leftValue": "={{ $json.isValid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        1168
+      ],
+      "id": "f811f217-d6d6-478b-a44a-352469b64486",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pdf_data_extraction",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        1184
+      ],
+      "id": "510596c8-e98c-41b5-a92f-504a59089ca7",
+      "name": "pdf_data_extraction",
+      "webhookId": "4f290f20-5d19-4346-adbe-2c6bb35b247d",
+      "alwaysOutputData": false
+    }
+  ],
+  "connections": {
+    "File Type Check": {
+      "main": [
+        [
+          {
+            "node": "Upload a file1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate a model response1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert documents": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate a model response1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Insert documents",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pdf_data_extraction": {
+      "main": [
+        [
+          {
+            "node": "File Type Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "841600fa-37c6-42bb-9bdc-6e7149cfd56d",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-06-29T09:26:29.806Z",
+      "createdAt": "2026-06-29T09:26:29.806Z",
+      "role": "workflow:owner",
+      "workflowId": "5XpXYtZOHrhO5Efa",
+      "projectId": "pIMp2GrTb3RpNTD0"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
